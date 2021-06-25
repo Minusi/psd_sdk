@@ -290,7 +290,7 @@
       </PrecompiledHeader>
       <ProgramDataBaseFileName>$(OutDir)$(ProjectName)_MTd.pdb</ProgramDataBaseFileName>
       <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
@@ -352,6 +352,7 @@
     <ClInclude Include="..\..\src\Psd\Psdinttypes.h" />
     <ClInclude Include="..\..\src\Psd\Psdispod.h" />
     <ClInclude Include="..\..\src\Psd\Psdisunsigned.h" />
+    <ClInclude Include="..\..\src\Psd\PsdParseMiscellaneous.h" />
     <ClInclude Include="..\..\src\Psd\PsdPch.h" />
     <ClInclude Include="..\..\src\Psd\Psdstdint.h" />
     <ClInclude Include="..\..\src\Psd\PsdDecompressRle.h" />
@@ -403,6 +404,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Psd\PsdExport.cpp" />
+    <ClCompile Include="..\..\src\Psd\PsdParseMiscellaneous.cpp" />
     <ClCompile Include="..\..\src\Psd\PsdPch.cpp" />
     <ClCompile Include="..\..\src\Psd\PsdDecompressRle.cpp" />
     <ClCompile Include="..\..\src\Psd\PsdInterleave.cpp" />
@@ -421,6 +423,7 @@
     <ClCompile Include="..\..\src\Psd\PsdFixedSizeString.cpp" />
     <ClCompile Include="..\..\src\Psd\PsdSyncFileReader.cpp" />
     <ClCompile Include="..\..\src\Psd\Psdminiz.c" />
+    <ClCompile Include="..\..\src\Psd\PsdSyncFileUtil.cpp" />
     <ClCompile Include="..\..\src\Psd\PsdSyncFileWriter.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@
 #include "PsdEndianConversion.h"
 #include "PsdSyncFileReader.h"
 #include "PsdSyncFileWriter.h"
+#include <string>
 
 
 PSD_NAMESPACE_BEGIN
@@ -19,10 +20,16 @@ namespace fileUtil
 	template <typename T>
 	inline T ReadFromFile(SyncFileReader& reader);
 
+	/// Read char string from a file.
+	std::string ReadStringFromFile(SyncFileReader& reader, size_t count);
+
 	/// Reads built-in data types from a file, assuming they are stored as big-endian data.
 	/// The read value is automatically converted to the native endianness.
 	template <typename T>
 	inline T ReadFromFileBE(SyncFileReader& reader);
+
+	/// Read char string from a file, assuming they are stored as big-endian data.
+	std::string ReadStringFromFileBE(SyncFileReader& reader, size_t count);
 
 	/// Writes built-in data types to a file.
 	template <typename T>

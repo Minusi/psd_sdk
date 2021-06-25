@@ -211,6 +211,9 @@
     <ClInclude Include="..\..\src\Psd\PsdSyncFileWriter.h">
       <Filter>Source Files\Util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Psd\PsdParseMiscellaneous.h">
+      <Filter>Source Files\Parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Psd\PsdPch.cpp">
@@ -271,6 +274,12 @@
       <Filter>Source Files\Exporter</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Psd\PsdSyncFileWriter.cpp">
+      <Filter>Source Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Psd\PsdParseMiscellaneous.cpp">
+      <Filter>Source Files\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Psd\PsdSyncFileUtil.cpp">
       <Filter>Source Files\Util</Filter>
     </ClCompile>
   </ItemGroup>
