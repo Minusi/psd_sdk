@@ -9,6 +9,9 @@
 
 PSD_NAMESPACE_BEGIN
 
+#ifdef _DEBUG
+uint8_t DEBUG_BUFFER[2048]{};
+#endif
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
 SyncFileReader::SyncFileReader(File* file)
@@ -27,6 +30,9 @@ void SyncFileReader::Read(void* buffer, uint32_t count)
 	m_file->WaitForRead(op);
 
 	m_position += count;
+#ifdef _DEBUG
+	m_file->Read(DEBUG_BUFFER, 2048, m_position);
+#endif
 }
 
 
@@ -35,6 +41,9 @@ void SyncFileReader::Read(void* buffer, uint32_t count)
 void SyncFileReader::Skip(uint64_t count)
 {
 	m_position += count;
+#ifdef _DEBUG
+	m_file->Read(DEBUG_BUFFER, 2048, m_position);
+#endif
 }
 
 
@@ -43,6 +52,9 @@ void SyncFileReader::Skip(uint64_t count)
 void SyncFileReader::SetPosition(uint64_t position)
 {
 	m_position = position;
+#ifdef _DEBUG
+	m_file->Read(DEBUG_BUFFER, 2048, m_position);
+#endif
 }
 
 

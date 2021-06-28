@@ -51,7 +51,7 @@ public:
 
 		Read(buffer, count);
 
-		if (T == 1)
+		if (T == 1u)
 		{
 			return;
 		}
@@ -84,4 +84,7 @@ private:
 	uint64_t m_position;
 };
 
+#ifdef _DEBUG
+extern uint8_t DEBUG_BUFFER[2048];
+#endif
 PSD_NAMESPACE_END
