@@ -202,7 +202,7 @@
       </PrecompiledHeader>
       <ProgramDataBaseFileName>$(OutDir)$(ProjectName)_MDd.pdb</ProgramDataBaseFileName>
       <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
@@ -372,6 +372,7 @@
     <ClInclude Include="..\..\src\Psd\PsdLog.h" />
     <ClInclude Include="..\..\src\Psd\PsdNamespace.h" />
     <ClInclude Include="..\..\src\Psd\PsdPlatform.h" />
+    <ClInclude Include="..\..\src\Psd\PsdString.h" />
     <ClInclude Include="..\..\src\Psd\PsdSyncFileWriter.h" />
     <ClInclude Include="..\..\src\Psd\PsdTypes.h" />
     <ClInclude Include="..\..\src\Psd\PsdColorModeDataSection.h" />

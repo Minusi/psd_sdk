@@ -25,7 +25,12 @@
 #include "Psdminiz.h"
 #include "Psdinttypes.h"
 #include "PsdLog.h"
+#include "PsdParseMiscellaneous.h"
+
 #include <cstring>
+#include <cassert>
+#include <string>
+#include <utility>
 
 
 PSD_NAMESPACE_BEGIN
@@ -793,41 +798,154 @@ namespace
 						return layerMaskSection;
 					}
 
-					const uint32_t key = fileUtil::ReadFromFileBE<uint32_t>(reader);
+					AdditionalLayer* additionalLayer = layerMaskSection->additionalLayer.get();
 
+					const uint32_t key = fileUtil::ReadFromFileBE<uint32_t>(reader);
 					// again, length is rounded to a multiple of 4
 					uint32_t length = fileUtil::ReadFromFileBE<uint32_t>(reader);
 					length = bitUtil::RoundUpToMultiple(length, 4u);
+					const uint64_t startPosition = reader.GetPosition();
 
-					if (key == util::Key<'L', 'r', '1', '6'>::VALUE)
+					switch (key)
 					{
-						const uint64_t offset = reader.GetPosition();
-						DestroyLayerMaskSection(layerMaskSection, allocator);
-						layerMaskSection = ParseLayer(document, reader, allocator, 0u, 0u, length);
-						reader.SetPosition(offset + length);
-					}
-					else if (key == util::Key<'L', 'r', '3', '2'>::VALUE)
-					{
-						const uint64_t offset = reader.GetPosition();
-						DestroyLayerMaskSection(layerMaskSection, allocator);
-						layerMaskSection = ParseLayer(document, reader, allocator, 0u, 0u, length);
-						reader.SetPosition(offset + length);
-					}
-					else if (key == util::Key<'v', 'm', 's', 'k'>::VALUE)
-					{
-						// TODO: could read extra vector mask data here
-						reader.Skip(length);
-					}
-					else if (key == util::Key<'l', 'n', 'k', '2'>::VALUE)
-					{
-						// TODO: could read individual smart object layer data here
-						reader.Skip(length);
-					}
-					else
-					{
-						reader.Skip(length);
+						case util::Key<'L', 'r', '1', '6'>::VALUE:
+						{
+							const uint64_t offset = reader.GetPosition();
+							DestroyLayerMaskSection(layerMaskSection, allocator);
+							layerMaskSection = ParseLayer(document, reader, allocator, 0u, 0u, length);
+							reader.SetPosition(offset + length);
+							break;
+						}
+						case util::Key<'L', 'r', '3', '2'>::VALUE:
+						{
+							const uint64_t offset = reader.GetPosition();
+							DestroyLayerMaskSection(layerMaskSection, allocator);
+							layerMaskSection = ParseLayer(document, reader, allocator, 0u, 0u, length);
+							reader.SetPosition(offset + length);
+							break;
+
+						}
+						case util::Key<'v', 'm', 's', 'k'>::VALUE:
+						{
+							// TODO: could read extra vector mask data here
+							reader.Skip(length);
+							break;
+						}
+						case util::Key<'l', 'n', 'k', 'D'>::VALUE:
+						case util::Key<'l', 'n', 'k', '2'>::VALUE:
+						case util::Key<'l', 'n', 'k', '3'>::VALUE:
+						case util::Key<'l', 'n', 'k', 'E'>::VALUE:
+						{
+							// TODO : implement only lnkD case. other case also need to be implemented.
+							while (startPosition + length > reader.GetPosition())
+							{
+								if (startPosition + length < reader.GetPosition())
+								{
+									PSD_ASSERT(startPosition + length >= reader.GetPosition(), "Parsing Error in additional layer, reader should not be larger than \"startPosition + length\"");
+								}
+
+								LinkedLayer* linkedLayer = new LinkedLayer();
+								additionalLayer->linkLayers.emplace_back(linkedLayer);
+
+								const uint64_t linkLength = fileUtil::ReadFromFileBE<uint64_t>(reader);
+								const std::string& linkType = fileUtil::ReadStringFromFileBE(reader, 4);
+								const uint32_t linkVersion = fileUtil::ReadFromFileBE<uint32_t>(reader);
+								if (linkType == "liFD")
+								{
+									linkedLayer->type = LinkedLayer::LinkType::liFD;
+								}
+								else if (linkType == "liFE")
+								{
+									linkedLayer->type = LinkedLayer::LinkType::liFE;
+								}
+								else if (linkType == "liFA")
+								{
+									linkedLayer->type = LinkedLayer::LinkType::liFA;
+								}
+								else
+								{
+									PSD_ASSERT(false, "invalid type in LinkedLayer::LinkType. implement new type or \
+										check parsing process is valid.");
+								}
+
+								PascalString uID = ParsePascalString(reader);
+								UnicodeString fileName = ParseUnicodeString(reader);
+								const std::string& fileType = fileUtil::ReadStringFromFileBE(reader, 4);
+								const std::string& fileCreator = fileUtil::ReadStringFromFileBE(reader, 4);
+								const uint64_t fileLength = fileUtil::ReadFromFileBE<uint64_t>(reader);
+								linkedLayer->fileName = fileName.content;
+								linkedLayer->fileExtension = fileType;
+								linkedLayer->fileCreator = fileCreator;
+								linkedLayer->fileLength = linkLength;
+
+								const uint8_t useDiscriptor = fileUtil::ReadFromFileBE<uint8_t>(reader);
+								// Read descriptor fo open parameters if fileDescriptor is true
+								if (useDiscriptor)
+								{
+									// Check descriptor version. See https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577411_21585
+									const uint32_t descriptorVersion = fileUtil::ReadFromFileBE<uint32_t>(reader);
+									PSD_ASSERT(descriptorVersion == 16, "descriptorVersion is not 16 in additional layer");
+
+									linkedLayer->fileDescriptor.reset(ParseDescriptor(reader));
+								}
+
+
+								if (linkType == "liFE")
+								{
+									const uint32_t externalDescriptorVersion = fileUtil::ReadFromFileBE<uint32_t>(reader);
+									PSD_ASSERT(externalDescriptorVersion == 16, "descriptorVersion is not 16 in additional layer");
+									linkedLayer->extFileDescriptor.reset(ParseDescriptor(reader));
+
+									if (linkVersion >= 3)
+									{
+										const uint32_t year = fileUtil::ReadFromFileBE<uint32_t>(reader);
+										const uint8_t month = fileUtil::ReadFromFileBE<uint8_t>(reader);
+										const uint8_t day = fileUtil::ReadFromFileBE<uint8_t>(reader);
+										const uint8_t hour = fileUtil::ReadFromFileBE<uint8_t>(reader);
+										const uint8_t minute = fileUtil::ReadFromFileBE<uint8_t>(reader);
+										const double seconds = fileUtil::ReadFromFileBE<double>(reader);
+										const uint64_t externalFileLength = fileUtil::ReadFromFileBE<uint64_t>(reader);
+										if (fileLength > 0)
+										{
+											PSD_ERROR("LayerMaskSection", "fileLength should be 0 when file type is liFE");
+										}
+										linkedLayer->fileLength = externalFileLength;
+									}
+								}
+
+								reader.Skip(fileLength);
+
+								UnicodeString childDocumentID{};
+								if (linkVersion >= 5)
+								{
+									childDocumentID = ParseUnicodeString(reader);
+									linkedLayer->childDocumentID = childDocumentID;
+								}
+								double assetModTime{};
+								if (linkVersion >= 6)
+								{
+									assetModTime = fileUtil::ReadFromFileBE<double>(reader);
+								}
+								uint16_t assetLockState{};
+								if (linkVersion >= 7)
+								{
+									assetLockState = fileUtil::ReadFromFileBE<uint8_t>(reader);
+									linkedLayer->assetLockState = assetLockState;
+								}
+
+								const uint8_t paddingByte = 4 - ((reader.GetPosition() - startPosition) % 4);
+								reader.Skip(paddingByte);
+							}
+							break;
+						}
+						default:
+						{
+							reader.Skip(length);
+							break;
+						}
 					}
 
+					// [signature + key + length] + raw data length
 					toRead -= 3u*sizeof(uint32_t) + length;
 				}
 			}
@@ -835,6 +953,53 @@ namespace
 
 		return layerMaskSection;
 	}
+}
+
+Descriptor* ParseDescriptor(SyncFileReader& reader)
+{
+	Descriptor* descriptor = new Descriptor();
+	descriptor->className = ParseUnicodeString(reader);
+	descriptor->classIDLength = fileUtil::ReadFromFileBE<uint32_t>(reader);
+	descriptor->classID = fileUtil::ReadStringFromFileBE(reader, descriptor->classIDLength == 0 ? 4 : descriptor->classIDLength);
+	descriptor->numItems = fileUtil::ReadFromFileBE<uint32_t>(reader);
+	for (size_t i = 0; i < descriptor->numItems; ++i)
+	{
+		uint32_t itemNameLength = fileUtil::ReadFromFileBE<uint32_t>(reader);
+		std::string itemName = fileUtil::ReadStringFromFileBE(reader, itemNameLength == 0 ? 4 : itemNameLength);
+		uint32_t itemType = fileUtil::ReadFromFileBE<uint32_t>(reader);
+		switch (itemType)
+		{
+			case util::Key<'o','b','j',' '>::VALUE:
+			{
+				// TODO : implement Reference class and parse it
+				break;
+			}
+			case util::Key<'O', 'b', 'j', 'c'>::VALUE:
+			{
+				std::shared_ptr<Descriptor> subDescriptor{ ParseDescriptor(reader) };
+				descriptor->descriptors.insert(std::make_pair(itemName, subDescriptor));
+				break;
+			}
+			case util::Key<'l','o','n','g'>::VALUE:
+			{
+				int32_t value = fileUtil::ReadFromFileBE<int32_t>(reader);
+				descriptor->integers.insert(std::make_pair(itemName, value));
+				break;
+			}
+			case util::Key<'T','E','X','T'>::VALUE:
+			{
+				UnicodeString value = ParseUnicodeString(reader);
+				descriptor->texts.insert(std::make_pair(itemName, value));
+				break;
+			}
+			default:
+			{
+				PSD_ASSERT(false, "invalid ItemType. check parsing flow or implement new key value type");
+			}
+		}
+	}
+
+	return descriptor;
 }
 
 

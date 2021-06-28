@@ -214,6 +214,9 @@
     <ClInclude Include="..\..\src\Psd\PsdParseMiscellaneous.h">
       <Filter>Source Files\Parser</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Psd\PsdString.h">
+      <Filter>Source Files\Types</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Psd\PsdPch.cpp">

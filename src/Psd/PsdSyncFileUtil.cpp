@@ -11,9 +11,9 @@ namespace fileUtil
 {
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	std::string ReadStringFromFile(SyncFileReader& reader, size_t count)
+	std::string ReadStringFromFile(SyncFileReader& reader, uint32_t count)
 	{
-		std::string buffer(count + 1, '\0');
+		std::string buffer(count, '\0');
 		reader.Read(&buffer[0], count);
 		return buffer;
 	}
@@ -21,7 +21,7 @@ namespace fileUtil
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	std::string ReadStringFromFileBE(SyncFileReader& reader, size_t count)
+	std::string ReadStringFromFileBE(SyncFileReader& reader, uint32_t count)
 	{
 		return ReadStringFromFile(reader, count);
 	}

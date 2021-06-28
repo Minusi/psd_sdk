@@ -11,6 +11,8 @@ class File;
 class Allocator;
 struct Layer;
 struct LayerMaskSection;
+struct Descriptor;
+class SyncFileReader;
 
 
 /// \ingroup Parser
@@ -20,6 +22,8 @@ struct LayerMaskSection;
 /// \remark It is valid to parse different sections of a document (e.g. using \ref ParseImageResourcesSection, \ref ParseImageDataSection,
 /// or \ref ParseLayerMaskSection) in parallel from different threads.
 LayerMaskSection* ParseLayerMaskSection(const Document* document, File* file, Allocator* allocator);
+
+Descriptor* ParseDescriptor(SyncFileReader& reader);
 
 /// \ingroup Parser
 /// Extracts data for a given \a layer.

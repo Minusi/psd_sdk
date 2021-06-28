@@ -3,10 +3,13 @@
 
 #pragma once
 
+#include <memory>
+
 
 PSD_NAMESPACE_BEGIN
 
 struct Layer;
+struct AdditionalLayer;
 
 
 /// \ingroup Sections
@@ -15,14 +18,17 @@ struct Layer;
 /// \sa Layer
 struct LayerMaskSection
 {
-	Layer* layers;						///< An array of layers, having layerCount entries.
-	unsigned int layerCount;			///< The number of layers stored in the array.
+	Layer* layers;							///< An array of layers, having layerCount entries.
+	unsigned int layerCount;				///< The number of layers stored in the array.
+	
+	std::unique_ptr<AdditionalLayer> additionalLayer{ new AdditionalLayer() };	///< The additional layer, which contains linked layer... etc.
+	
 
-	uint16_t overlayColorSpace;			///< The color space of the overlay (undocumented, not used yet).
-	uint16_t opacity;					///< The global opacity level (0 = transparent, 100 = opaque, not used yet).
-	uint8_t kind;						///< The global kind of layer (not used yet).
+	uint16_t overlayColorSpace;				///< The color space of the overlay (undocumented, not used yet).
+	uint16_t opacity;						///< The global opacity level (0 = transparent, 100 = opaque, not used yet).
+	uint8_t kind;							///< The global kind of layer (not used yet).
 
-	bool hasTransparencyMask;			///< Whether the layer data contains a transparency mask or not.
+	bool hasTransparencyMask;				///< Whether the layer data contains a transparency mask or not.
 };
 
 PSD_NAMESPACE_END

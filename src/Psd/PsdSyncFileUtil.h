@@ -21,7 +21,7 @@ namespace fileUtil
 	inline T ReadFromFile(SyncFileReader& reader);
 
 	/// Read char string from a file.
-	std::string ReadStringFromFile(SyncFileReader& reader, size_t count);
+	std::string ReadStringFromFile(SyncFileReader& reader, uint32_t count);
 
 	/// Reads built-in data types from a file, assuming they are stored as big-endian data.
 	/// The read value is automatically converted to the native endianness.
@@ -29,7 +29,7 @@ namespace fileUtil
 	inline T ReadFromFileBE(SyncFileReader& reader);
 
 	/// Read char string from a file, assuming they are stored as big-endian data.
-	std::string ReadStringFromFileBE(SyncFileReader& reader, size_t count);
+	std::string ReadStringFromFileBE(SyncFileReader& reader, uint32_t count);
 
 	/// Writes built-in data types to a file.
 	template <typename T>

@@ -3,7 +3,11 @@
 
 #pragma once
 
+#include <vector>
+#include <map>
+#include <memory>
 #include "PsdFixedSizeString.h"
+#include "PsdString.h"
 
 
 PSD_NAMESPACE_BEGIN
@@ -12,6 +16,11 @@ struct Channel;
 struct TransparencyMask;
 struct LayerMask;
 struct VectorMask;
+
+struct Descriptor;
+struct LinkedLayer;
+
+struct Reference;
 
 
 /// \ingroup Types
@@ -41,6 +50,79 @@ struct Layer
 
 	uint32_t type;						///< The layer's type. Can be any of \ref layerType::Enum.
 	bool isVisible;						///< The layer's visibility.
+};
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Additional Layer 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct AdditionalLayer
+{
+public:
+	std::vector<std::unique_ptr<LinkedLayer>> linkLayers{};
+};
+
+struct LinkedLayer
+{
+public:
+	enum class LinkType
+	{
+		NONE,	// no initialized yet
+		liFD,	// which means 'linked file data'
+		liFE,	// which means 'linked file external'
+		liFA,	// which means 'linked file alias'
+	};
+
+public:
+	LinkType type{};
+
+	std::unique_ptr<Descriptor> fileDescriptor{};
+	std::wstring fileName{};
+	std::string fileExtension{};
+	std::string fileCreator{};
+	uint64_t fileLength{};
+
+	// only use when type is liFE
+	std::unique_ptr<Descriptor> extFileDescriptor{};
+	std::wstring extFilePath{};
+
+	UnicodeString childDocumentID{};
+	uint16_t assetLockState{};
+	
+	// TODO implement when you need
+	// double assetModTime{};
+};
+
+
+struct Descriptor
+{
+	UnicodeString className;
+	uint32_t classIDLength{};
+	std::string classID{};
+	uint32_t numItems{};
+	
+	// TODO : implement all items hidden by comment
+	std::map<std::string, std::shared_ptr<Reference>> references;
+	std::map<std::string, std::shared_ptr<Descriptor>> descriptors;
+	//std::map<std::string, std::list<>> lists;
+	std::map<std::string, double> doubles;
+	//std::map<std::string, float> floats;
+	std::map<std::string, UnicodeString> texts;
+	//std::map<std::string, enum> enums;
+	std::map<std::string, uint32_t> integers;
+	std::map<std::string, uint64_t> largeIntegers;
+	std::map<std::string, bool> bools;
+	//std::map<std::string, std::shared_ptr<Descriptor>> globalObjects;
+	//std::map<std::string, type> types;
+	//std::map<std::string, GlobalClass> globalClasses;
+	//std::map<std::string, Alias> aliases;
+	//std::map<std::string, RawData> rawDatas;
+};
+
+struct Reference
+{
+	uint32_t numItems{};
+	// TODO : impelemnt all items
 };
 
 PSD_NAMESPACE_END
